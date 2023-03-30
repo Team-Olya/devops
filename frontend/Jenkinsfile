@@ -25,8 +25,8 @@ pipeline {
         stage('deploy') {
             steps {
                 sh '''
-                    ssh -i "/home/jenkins/.ssh/slave-SoftServe2023" olha-team@172.31.117.224 "rm -rf /var/www/oleksandr-team-production/*"
-                    scp -i "/home/jenkins/.ssh/slave-SoftServe2023" -rp ./build/* olha-team@172.31.117.224:/var/www/oleksandr-team-production/
+                    ssh -i "/home/jenkins/.ssh/slave-SoftServe2023" olha-team@172.31.117.224 "rm -rf /var/www/oleksandr-team-production/html/*"
+                    scp -i "/home/jenkins/.ssh/slave-SoftServe2023" -rp ./build/* olha-team@172.31.117.224:/var/www/oleksandr-team-production/html/
                 '''
             }
         }
