@@ -25,8 +25,8 @@ pipeline {
         stage('deploy') {
             steps {
                 sh '''
-                    ssh -i "/home/jenkins/.ssh/slave-SoftServe2023" olha-team@172.31.117.224 "rm -rf /var/www/oleksandr-team-production/html/*"
-                    scp -i "/home/jenkins/.ssh/slave-SoftServe2023" -rp ./build/* olha-team@172.31.117.224:/var/www/oleksandr-team-production/html/
+                    ssh -i "/home/jenkins/.ssh/slave-SoftServe2023" olha-team@172.31.117.224 "rm -rf /var/www/olha-team-production/html/*"
+                    scp -i "/home/jenkins/.ssh/slave-SoftServe2023" -rp ./build/* olha-team@172.31.117.224:/var/www/olha-team-production/html/
                 '''
             }
         }
@@ -47,12 +47,11 @@ pipeline {
     }
     post {
         always {
-            discordSend description: "Jenkins pipeline build: ${currentBuild.currentResult}",
+            discordSend description: "Jenkins pipeline build: ${currentBuild.currentResult}\nBuild log: ${BUILD_URL}consoleText",
                 link: env.BUILD_URL,
                 result: currentBuild.currentResult,
                 title: JOB_NAME,
                 webhookURL: "${env.WEBHOOK_URL}"
-            echo "${env.WEBHOOK_URL}"
         }
     }
 }
