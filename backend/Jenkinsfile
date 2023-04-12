@@ -55,13 +55,13 @@ pipeline {
                     cat <<EOF >> talantino.conf
 [Service]
 Environment="BUCKET=olha-team-backend"
-Environment="S3_ACCESS_KEY=${BACKEND_ACCESS_KEY}"
-Environment="S3_SECRET_KEY=${BACKEND_SECRET_KEY}"
-Environment="S3_REGION=${REGION}"
+Environment="S3_ACCESS_KEY=${env.BACKEND_ACCESS_KEY}"
+Environment="S3_SECRET_KEY=${env.BACKEND_SECRET_KEY}"
+Environment="S3_REGION=${env.REGION}"
 
 Environment="DB_LOGIN=ot"
-Environment="DB_PASSWORD=${DATABASE_PASSWORD}"
-Environment="DB_URL=${DATABASE_URL}"
+Environment="DB_PASSWORD=${env.DATABASE_PASSWORD}"
+Environment="DB_URL=${env.DATABASE_URL}"
 
 Environment="SPRING_PROFILES_ACTIVE=prod"
 EOF                    
