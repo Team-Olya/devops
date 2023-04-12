@@ -52,6 +52,7 @@ pipeline {
                 }
                 sh '''
                     sudo mkdir -p /etc/systemd/system/talantino.service.d
+                    sudo "" > /etc/systemd/system/talantino.service.d/talantino.conf
                     sudo cat <<EOF >> /etc/systemd/system/talantino.service.d/talantino.conf
                     [Service]
                     Environment="BUCKET=olha-team-backend"
