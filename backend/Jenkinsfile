@@ -9,6 +9,9 @@ pipeline {
         DATABASE_URL = credentials('ot_database_url')
         DATABASE_PASSWORD = credentials('ot_database_password')
         WEBHOOK_URL = credentials('DiscordWebhookOT')
+        EMAIL_USER=credentials('mail_user_ot')
+        EMAIL_PASSWORD=credentials('mail_password_ot')
+
     }
     stages {
         stage('Build') {
@@ -29,6 +32,9 @@ pipeline {
                     export DB_URL=${DATABASE_URL}
 
                     export SPRING_PROFILES_ACTIVE=prod
+
+                    export MAIL_USER=${EMAIL_USER}
+                    export MAIL_PASSWORD=${EMAIL_PASSWORD}
 
                     chmod 744 ./mvnw
                     ./mvnw clean package
