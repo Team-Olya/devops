@@ -1,0 +1,80 @@
+pipeline {
+    agent none
+    environment {
+        SERVER_CREDENTIALS = 's3-access'
+        BUCKET = 'olha-team-bucket'
+        REGION = 'eu-central-1'
+        BACKEND_ACCESS_KEY = credentials('ot_backend_access_key')
+        BACKEND_SECRET_KEY = credentials('ot_backend_secret_key')
+        DATABASE_URL = credentials('ot_database_url')
+        DATABASE_PASSWORD = credentials('ot_database_password')
+        WEBHOOK_URL = credentials('DiscordWebhookOT')
+        EMAIL_USER=credentials('mail_user_ot')
+        EMAIL_PASSWORD=credentials('mail_password_ot')
+
+    }
+    stages {
+        stage('Build') {
+            agent { label 'ecs-jdk' }
+            steps {
+                git branch: 'dev', url: 'https://github.com/Team-Olya/backend.git'
+                sh '''
+                    java --version
+
+                    rm -f .env
+                    export JAVA_HOME="/lib/jvm/jdk-17"
+
+                    export BUCKET="olha-team-backend"
+                    export S3_ACCESS_KEY=${BACKEND_ACCESS_KEY}
+                    export S3_SECRET_KEY=${BACKEND_SECRET_KEY}
+                    export S3_REGION=${REGION}
+
+                    export DB_LOGIN="ot"
+                    export DB_PASSWORD=${DATABASE_PASSWORD}
+                    export DB_URL=${DATABASE_URL}
+
+                    export SPRING_PROFILES_ACTIVE=prod
+
+                    export MAIL_USER=${EMAIL_USER}
+                    export MAIL_PASSWORD=${EMAIL_PASSWORD}
+
+                    chmod 744 ./mvnw
+                    ./mvnw clean package
+                    cp ./target/talantino*.jar ./talantino-${BUILD_NUMBER}.jar
+                '''
+                withAWS(credentials: "${SERVER_CREDENTIALS}", region: "${REGION}") {
+                    script {
+                        s3Upload(file: "./talantino-${BUILD_NUMBER}.jar", bucket: "${BUCKET}", path:"backend/talantino-${BUILD_NUMBER}.jar")
+                    }
+                }
+                sh 'rm ./talantino-${BUILD_NUMBER}.jar'
+            }
+        }
+        stage('Deploy') {
+            agent { label 'java && target && dev' }
+            steps {
+                withAWS(credentials: "${SERVER_CREDENTIALS}", region: "${REGION}") {
+                    script {
+                        s3Download(file:"./talantino-${BUILD_NUMBER}.jar", bucket:"${BUCKET}", path:"backend/talantino-${BUILD_NUMBER}.jar")
+                    }
+                }
+                sh '''
+                    sudo systemctl stop talantino || true
+                    chmod 755 ./backend/install-systemd-service.sh
+                    ./backend/install-systemd-service.sh
+                    mv -f ./talantino-${BUILD_NUMBER}.jar ~/talantino.jar
+                    sudo systemctl enable talantino --now
+                '''
+            }
+        }
+    }
+    post {
+        always {
+            discordSend description: "Status: `${currentBuild.currentResult}`\nBuild log: ${BUILD_URL}consoleText",
+                link: env.BUILD_URL,
+                result: currentBuild.currentResult,
+                title: JOB_NAME,
+                webhookURL: "${env.WEBHOOK_URL}"
+        }
+    }
+}
