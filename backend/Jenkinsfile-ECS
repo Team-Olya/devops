@@ -22,7 +22,7 @@ pipeline {
                     java --version
 
                     rm -f .env
-                    export JAVA_HOME="/lib/jvm/jdk-17"
+                    export JAVA_HOME="/opt/java/openjdk"
 
                     export BUCKET="olha-team-backend"
                     export S3_ACCESS_KEY=${BACKEND_ACCESS_KEY}
