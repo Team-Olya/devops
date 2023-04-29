@@ -15,7 +15,7 @@ pipeline {
 
     }
     stages {
-        stage('Backend start') {
+        stage('Start backend') {
             agent { label 'master' }
             steps {
                 script {
@@ -81,29 +81,20 @@ pipeline {
         }
     }
     post {
+        agent { label 'master' }
         always {
-            stages {
-                stage('Discord send') {
-                    steps {
-                        discordSend description: "Status: `${currentBuild.currentResult}`\nBuild log: ${BUILD_URL}consoleText",
-                            link: env.BUILD_URL,
-                            result: currentBuild.currentResult,
-                            title: JOB_NAME,
-                            webhookURL: "${env.WEBHOOK_URL}"
-                    }
-                }
-                agent { label 'master' }
-                stage('Backend stop') {
-                    steps {
-                        script {
-                            def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
-                            if (computer.isOnline()) {
-                                def currentTime = new Date().format("HH:mm:ss")
-                                if (currentTime >= "23:00:00" || currentTime < "11:00:00") {
-                                    sh('aws ec2 stop-instances --instance-ids ${EC2_BACKEND_ID}')
-                                }
-                            }
-                        }
+            discordSend description: "Status: `${currentBuild.currentResult}`\nBuild log: ${BUILD_URL}consoleText",
+                link: env.BUILD_URL,
+                result: currentBuild.currentResult,
+                title: JOB_NAME,
+                webhookURL: "${env.WEBHOOK_URL}"
+
+            script {
+                def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
+                if (computer.isOnline()) {
+                    def currentTime = new Date().format("HH:mm:ss")
+                    if (currentTime >= "23:00:00" || currentTime < "11:00:00") {
+                        sh('aws ec2 stop-instances --instance-ids ${EC2_BACKEND_ID}')
                     }
                 }
             }
