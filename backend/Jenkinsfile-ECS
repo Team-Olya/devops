@@ -80,8 +80,8 @@ pipeline {
             }
         }
     }
+    agent { label 'master' }
     post {
-        agent { label 'master' }
         always {
             discordSend description: "Status: `${currentBuild.currentResult}`\nBuild log: ${BUILD_URL}consoleText",
                 link: env.BUILD_URL,
