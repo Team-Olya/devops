@@ -16,8 +16,8 @@ pipeline {
     }
     stages {
         stage('Check backend status') {
+            agent { label 'master' }
             steps {
-                agent { label 'master' }
                 script {
                     def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
                     if (computer.isOffline()) {
