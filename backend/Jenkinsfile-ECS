@@ -89,11 +89,13 @@ pipeline {
                 webhookURL: "${env.WEBHOOK_URL}"
 
             script {
-                def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
-                if (computer.isOnline()) {
-                    def currentTime = new Date().format("HH:mm:ss")
-                    if (currentTime <= "23:00:00" || currentTime > "11:00:00") {
-                        sh('aws ec2 stop-instances --instance-ids ${EC2_BACKEND_ID}')
+                node(label: 'master') {
+                    def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
+                    if (computer.isOnline()) {
+                        def currentTime = new Date().format("HH:mm:ss")
+                        if (currentTime <= "23:00:00" || currentTime > "11:00:00") {
+                            sh('aws ec2 stop-instances --instance-ids ${EC2_BACKEND_ID}')
+                        }
                     }
                 }
             }
