@@ -16,11 +16,6 @@ pipeline {
     }
     stages {
         stage('Check backend status') {
-            agent {
-                node {
-                    label 'master'
-                }
-            }
             steps {
                 script {
                     def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
