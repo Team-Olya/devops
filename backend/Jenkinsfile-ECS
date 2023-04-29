@@ -11,9 +11,21 @@ pipeline {
         WEBHOOK_URL = credentials('DiscordWebhookOT')
         EMAIL_USER=credentials('mail_user_ot')
         EMAIL_PASSWORD=credentials('mail_password_ot')
+        EC2_BACKEND_ID=credentials('EC2-backend-id')
 
     }
     stages {
+        stage('Check backend status') {
+            agent { label 'master' }
+            steps {
+                script {
+                    def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
+                    if (computer.isOffline()) {
+                        sh('aws ec2 start-instances --instance-ids ${EC2_BACKEND_ID}')
+                    }
+                }
+            }
+        }
         stage('Build') {
             agent { label 'ecs-jdk' }
             steps {
