@@ -88,6 +88,7 @@ pipeline {
                         def now = new Date().parse("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"))
                         def time = now.format("HH:mm", timeZone)
                         echo(time)
+                        
                         if (time >= "23:00" || time < "11:00") {
                             sh('aws ec2 stop-instances --instance-ids ${EC2_BACKEND_ID}')
                         }
