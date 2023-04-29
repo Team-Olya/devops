@@ -52,29 +52,20 @@ pipeline {
 
                     chmod 744 ./mvnw
                     ./mvnw clean package
-                    cp ./target/talantino*.jar ./talantino-${BUILD_NUMBER}.jar
+                    mv ./target/talantino*.jar ./talantino.jar
                 '''
-                withAWS(credentials: "${SERVER_CREDENTIALS}", region: "${REGION}") {
-                    script {
-                        s3Upload(file: "./talantino-${BUILD_NUMBER}.jar", bucket: "${BUCKET}", path:"backend/talantino-${BUILD_NUMBER}.jar")
-                    }
-                }
-                sh 'rm ./talantino-${BUILD_NUMBER}.jar'
+                stash name: 'jar', includes: '*.jar'
             }
         }
         stage('Deploy') {
             agent { label 'java && target && dev' }
             steps {
-                withAWS(credentials: "${SERVER_CREDENTIALS}", region: "${REGION}") {
-                    script {
-                        s3Download(file:"./talantino-${BUILD_NUMBER}.jar", bucket:"${BUCKET}", path:"backend/talantino-${BUILD_NUMBER}.jar")
-                    }
-                }
+                unstash 'jar'
                 sh '''
                     sudo systemctl stop talantino || true
                     chmod 755 ./backend/install-systemd-service.sh
                     ./backend/install-systemd-service.sh
-                    mv -f ./talantino-${BUILD_NUMBER}.jar ~/talantino.jar
+                    mv -f ./talantino.jar ~/talantino.jar
                     sudo systemctl enable talantino --now
                 '''
             }
@@ -93,6 +84,7 @@ pipeline {
                     def computer = Jenkins.getInstance().getComputer('Backend Server (Dev) (Debian)')
                     if (computer.isOnline()) {
                         def currentTime = new Date().format("HH:mm:ss")
+                        echo(currentTime)
                         if (currentTime >= "23:00:00" || currentTime < "11:00:00") {
                             sh('aws ec2 stop-instances --instance-ids ${EC2_BACKEND_ID}')
                         }
