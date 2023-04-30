@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ecs-node' }
+    agent none
     environment {
         SERVER_CREDENTIALS = 's3-access'
         BUCKET = 'olha-team-bucket'
@@ -11,8 +11,7 @@ pipeline {
         WEBHOOK_URL = credentials('DiscordWebhookOT')
         
         EC2_FRONTEND_ID=credentials('EC2-frontend-id')
-        USER_PASSWORD=credentials('user_password')
-        SSH_KEY=credentials('ssh-slave-key')
+        USER_PASSWORD = credentials('user_password')
     }
     stages {
         stage('start frontend') {
@@ -37,6 +36,7 @@ pipeline {
             }
         }
         stage('build') {
+            agent { label 'ecs-node' }
             steps {
                 git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
                 sh '''
@@ -48,15 +48,21 @@ pipeline {
 
                 npm install --omit=dev
                 npm run build
-                chmod -R 755 ./build/*
+                chmod -R 775 ./build/*
+                tar -cvzf ./html.tar.gz ./build/*
                 '''
+                stash name: 'html', includes: 'html.tar.gz'
             }
         }
         stage('deploy') {
+            agent { label 'node && target && dev' }
             steps {
-                sh '''
-                    ssh -i ${SSH_KEY} olha-team@10.0.1.250 "rm -rf /var/www/olha-team/html/*"
-                    scp -i ${SSH_KEY} -rp ./build/* olha-team@10.0.1.250:/var/www/olha-team/html/
+                unstash name: 'html'
+                sh'''
+                    rm -rf /var/www/olha-team/html/*
+                    mv ./html.tar.gz /var/www/olha-team/html/
+                    tar -xvf /var/www/olha-team/html/html.tar.gz
+                    rm -f /var/www/olha-team/html/html.tar.gz
                 '''
             }
         }
@@ -82,7 +88,6 @@ pipeline {
                             sh('aws ec2 stop-instances --instance-ids ${EC2_FRONTEND_ID}')
                         }
                     }
-                    sleep(time: 300)
                 }
             }
         }
