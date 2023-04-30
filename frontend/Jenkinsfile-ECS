@@ -60,12 +60,11 @@ pipeline {
             steps {
                 unstash name: 'html'
                 sh'''
-                    pwd
-                    whoami
-
                     rm -rf /var/www/olha-team/html/*
                     mv ./html.tar.gz /var/www/olha-team/html/
-                    tar -xzvf /var/www/olha-team/html/html.tar.gz
+                    cd /var/www/olha-team/html/
+                    tar -xzvf html.tar.gz --strip-components=1
+                    rm -rf ./*
                 '''
             }
         }
@@ -77,7 +76,7 @@ pipeline {
                 result: currentBuild.currentResult,
                 title: JOB_NAME,
                 webhookURL: "${env.WEBHOOK_URL}"
-            /*
+
             script {
                 node(label: 'master') {
                 def computer = Jenkins.getInstance().getComputer('Frontend Server (Main and Dev) (Debian)')
@@ -92,7 +91,7 @@ pipeline {
                         }
                     }
                 } 
-            }*/
+            }
         }
     }
 }
