@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'ecs-node' }
+    agent none
     environment {
         SERVER_CREDENTIALS = 's3-access'
         BUCKET = 'olha-team-bucket'
@@ -35,14 +35,11 @@ pipeline {
                 }
             }
         }
-        stage('clone') {
-            steps {
-                git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
-            }
-        }
         stage('build') {
+            agent { label 'ecs-node' }
             steps {
                 sh '''
+                git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
                 export REACT_APP_API_URL=${API_URL}
                 export BUCKET="olha-team-backend"
                 export S3_ACCESS_KEY=${FRONTEND_ACCESS_KEY}
@@ -61,7 +58,7 @@ pipeline {
             agent { label 'node && target && dev' }
             steps {
                 sh '''
-                    su olha-team | echo ${USER_PASSWORD}
+                    echo ${USER_PASSWORD} | su olha-team 
                     rm -rf /var/www/olha-team/html/*
                 '''
                 unstash name: 'html' 
