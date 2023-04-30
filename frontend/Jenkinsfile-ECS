@@ -58,6 +58,7 @@ pipeline {
             steps {
                 unstash name: 'html'
                 sh'''
+                    whoami
                     rm -rf /var/www/olha-team/html/*
                     mv ./html.tar.gz /var/www/olha-team/html/
                     tar -xzvf /var/www/olha-team/html/html.tar.gz --strip-components=1
