@@ -48,7 +48,7 @@ pipeline {
                 npm install --omit=dev
                 npm run build
                 chmod -R 775 ./build/*
-                tar -cvzf ./html.tar.gz ./build/*
+                tar -cvzf ./html.tar.gz -C ./build .
                 '''
                 stash name: 'html', includes: 'html.tar.gz'
             }
@@ -60,8 +60,7 @@ pipeline {
                 sh'''
                     rm -rf /var/www/olha-team/html/*
                     mv ./html.tar.gz /var/www/olha-team/html/
-                    tar -xvf /var/www/olha-team/html/html.tar.gz
-                    rm -f /var/www/olha-team/html/html.tar.gz
+                    tar -xzvf /var/www/olha-team/html/html.tar.gz --strip-components=1
                 '''
             }
         }
