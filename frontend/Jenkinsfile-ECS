@@ -62,10 +62,7 @@ pipeline {
                     pwd
                     whoami
 
-                    chown olha-team:olha-team ./html.tar.gz
-
                     rm -rf /var/www/olha-team/html/*
-
                     mv ./html.tar.gz /var/www/olha-team/html/
                     tar -xzvf /var/www/olha-team/html/html.tar.gz
                 '''
