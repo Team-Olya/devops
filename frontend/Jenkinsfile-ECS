@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent { label 'ecs-node' }
     environment {
         SERVER_CREDENTIALS = 's3-access'
         BUCKET = 'olha-team-bucket'
@@ -36,7 +36,6 @@ pipeline {
             }
         }
         stage('build') {
-            agent { label 'ecs-node' }
             steps {
                 git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
                 sh '''
@@ -50,19 +49,14 @@ pipeline {
                 npm run build
                 chmod -R 755 ./build/*
                 '''
-                stash name: 'html', includes: './build/*'
             }
         }
         stage('deploy') {
-            agent { label 'node && target && dev' }
             steps {
                 sh '''
-                    su olha-team | echo ${USER_PASSWORD}
-                    rm -rf /var/www/olha-team/html/*
-                    rm -rf ./*
+                    ssh -i "/home/jenkins/.ssh/slave-SoftServe2023" olha-team@10.0.1.250 "rm -rf /var/www/olha-team/html/*"
+                    scp -i "/home/jenkins/.ssh/slave-SoftServe2023" -rp ./build/* olha-team@10.0.1.250:/var/www/olha-team/html/
                 '''
-                unstash name: 'html' 
-                sh('mv ./* /var/www/olha-team/html/')
             }
         }
     }
