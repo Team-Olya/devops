@@ -49,8 +49,6 @@ pipeline {
                 npm run build
                 chmod -R 755 ./build/*
                 tar -cvzf ./html.tar.gz -C ./build .
-                chmod 777 ./html.tar.gz
-                chown 1006:1006 ./html.tar.gz
                 '''
                 stash name: 'html', includes: 'html.tar.gz'
             }
