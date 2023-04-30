@@ -38,8 +38,8 @@ pipeline {
         stage('build') {
             agent { label 'ecs-node' }
             steps {
-                sh '''
                 git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
+                sh '''
                 export REACT_APP_API_URL=${API_URL}
                 export BUCKET="olha-team-backend"
                 export S3_ACCESS_KEY=${FRONTEND_ACCESS_KEY}
