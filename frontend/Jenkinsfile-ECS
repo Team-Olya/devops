@@ -60,8 +60,7 @@ pipeline {
                 sh'''
                     rm -rf /var/www/olha-team/html/*
                     mv ./html.tar.gz /var/www/olha-team/html/
-                    cd /var/www/olha-team/html/
-                    tar -xzvf html.tar.gz --strip-components=1
+                    tar -xzvf /var/www/olha-team/html/html.tar.gz /var/www/olha-team/html/ --strip-components=1
                     rm -rf ./*
                 '''
             }
