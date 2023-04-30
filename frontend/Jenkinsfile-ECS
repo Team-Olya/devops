@@ -49,8 +49,7 @@ pipeline {
                 npm run build
                 chmod -R 755 ./build/*
                 tar -cvzf ./html.tar.gz -C ./build .
-                chmod 777 ./html.tar.gz
-                chown 1006:1006 ./html.tar.gz
+                chown olha-team:olha-team ./html.tar.gz
                 '''
                 stash name: 'html', includes: 'html.tar.gz'
             }
@@ -58,12 +57,14 @@ pipeline {
         stage('deploy') {
             agent { label 'node && target && dev' }
             steps {
+                sh'''
+                    sudo su olha-team
+                    rm -rf /var/www/olha-team/html/*
+                '''
                 unstash name: 'html'
                 sh'''
                     pwd
                     whoami
-
-                    rm -rf /var/www/olha-team/html/*
                     mv ./html.tar.gz /var/www/olha-team/html/
                     tar -xzvf /var/www/olha-team/html/html.tar.gz
                 '''
@@ -77,22 +78,23 @@ pipeline {
                 result: currentBuild.currentResult,
                 title: JOB_NAME,
                 webhookURL: "${env.WEBHOOK_URL}"
-
-             script {
+            /*
+            script {
                 node(label: 'master') {
-                    def computer = Jenkins.getInstance().getComputer('Frontend Server (Main and Dev) (Debian)')
-                    if (computer.isOnline()) {
-                        def timeZone = TimeZone.getTimeZone("Europe/Kiev")
-                        def time = new Date().format("HH:mm", timezone=timeZone)
-                        echo(time)
-                        
-                        if (time >= "23:00" || time < "11:00") {
-                            sleep(time: 300)
+                def computer = Jenkins.getInstance().getComputer('Frontend Server (Main and Dev) (Debian)')
+                if (computer.isOnline()) {
+                    def timeZone = TimeZone.getTimeZone("Europe/Kiev")
+                    def time = new Date().format("HH:mm", timezone=timeZone)
+                    echo(time)
+                            
+                    if (time >= "23:00" || time < "11:00") {
+                        sleep(time: 300)
                             sh('aws ec2 stop-instances --instance-ids ${EC2_FRONTEND_ID}')
                         }
                     }
-                }
+                } 
             }
+            */
         }
     }
 }
