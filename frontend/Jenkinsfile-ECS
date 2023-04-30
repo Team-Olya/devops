@@ -66,7 +66,8 @@ pipeline {
                     rm -rf /var/www/olha-team/html/*
                     rm -rf ./*
                 '''
-                unstash name: 'html', targetDir: '/var/www/olha-team/html/'
+                unstash name: 'html' 
+                sh('mv ./* /var/www/olha-team/html/')
             }
         }
     }
