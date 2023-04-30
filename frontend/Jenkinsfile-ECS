@@ -63,13 +63,13 @@ pipeline {
                 sh '''
                     su olha-team | echo ${USER_PASSWORD}
                     rm -rf /var/www/olha-team/html/*
-                    rm -rf ./*
                 '''
                 unstash name: 'html' 
                 sh'''
                     mv ./html.tar.gz /var/www/olha-team/html/
                     tar -xvf /var/www/olha-team/html/html.tar.gz
                     rm -f /var/www/olha-team/html/html.tar.gz
+                    rm -rf ./*
                 '''
             }
         }
