@@ -35,9 +35,13 @@ pipeline {
                 }
             }
         }
-        stage('build') {
+        stage('clone') {
             steps {
                 git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
+            }
+        }
+        stage('build') {
+            steps {
                 sh '''
                 export REACT_APP_API_URL=${API_URL}
                 export BUCKET="olha-team-backend"
@@ -48,14 +52,24 @@ pipeline {
                 npm install --omit=dev
                 npm run build
                 chmod -R 755 ./build/*
+                tar -cvzf ./html.tar.gz ./build/*
                 '''
+                stash name: 'html', includes: 'html.tar.gz'
             }
         }
         stage('deploy') {
+            agent { label 'node && target && dev' }
             steps {
                 sh '''
-                    ssh -i "/home/jenkins/.ssh/slave-SoftServe2023" olha-team@10.0.1.250 "rm -rf /var/www/olha-team/html/*"
-                    scp -i "/home/jenkins/.ssh/slave-SoftServe2023" -rp ./build/* olha-team@10.0.1.250:/var/www/olha-team/html/
+                    su olha-team | echo ${USER_PASSWORD}
+                    rm -rf /var/www/olha-team/html/*
+                    rm -rf ./*
+                '''
+                unstash name: 'html' 
+                sh'''
+                    mv ./html.tar.gz /var/www/olha-team/html/
+                    tar -xvf /var/www/olha-team/html/html.tar.gz
+                    rm -f /var/www/olha-team/html/html.tar.gz
                 '''
             }
         }
