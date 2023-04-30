@@ -3,6 +3,7 @@ pipeline {
     environment {
         SERVER_CREDENTIALS = 's3-access'
         BUCKET = 'olha-team-bucket'
+        
         REGION = 'eu-central-1'
         BACKEND_ACCESS_KEY = credentials('ot_backend_access_key')
         BACKEND_SECRET_KEY = credentials('ot_backend_secret_key')
@@ -10,6 +11,7 @@ pipeline {
         DATABASE_PASSWORD = credentials('ot_database_password')
         WEBHOOK_URL = credentials('DiscordWebhookOT')
         EMAIL_USER=credentials('mail_user_ot')
+
         EMAIL_PASSWORD=credentials('mail_password_ot')
         EC2_BACKEND_ID=credentials('EC2-backend-id')
 
