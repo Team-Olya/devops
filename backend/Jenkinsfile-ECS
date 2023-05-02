@@ -10,9 +10,11 @@ pipeline {
         DATABASE_URL = credentials('ot_database_url')
         DATABASE_PASSWORD = credentials('ot_database_password')
         WEBHOOK_URL = credentials('DiscordWebhookOT')
+        
         EMAIL_USER=credentials('mail_user_ot')
-
         EMAIL_PASSWORD=credentials('mail_password_ot')
+
+        EC2_FRONTEND_ID=credentials('EC2-frontend-id')
         EC2_BACKEND_ID=credentials('EC2-backend-id')
 
     }
