@@ -9,14 +9,16 @@ pipeline {
         BACKEND_SECRET_KEY = credentials('ot_backend_secret_key')
         DATABASE_URL = credentials('ot_database_url')
         DATABASE_PASSWORD = credentials('ot_database_password')
+        
         WEBHOOK_URL = credentials('DiscordWebhookOT')
+        DISCORD_TOKEN = credentials('discord_token_ot')
+        DISCORD_CHANNEL = credentials('discord_channel_ot')
         
         EMAIL_USER=credentials('mail_user_ot')
         EMAIL_PASSWORD=credentials('mail_password_ot')
 
         EC2_FRONTEND_ID=credentials('EC2-frontend-id')
         EC2_BACKEND_ID=credentials('EC2-backend-id')
-
     }
     stages {
         stage('Start servers') {
