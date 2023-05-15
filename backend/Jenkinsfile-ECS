@@ -11,8 +11,8 @@ pipeline {
         DATABASE_PASSWORD = credentials('ot_database_password')
         
         WEBHOOK_URL = credentials('DiscordWebhookOT')
-        DISCORD_TOKEN = credentials('discord_token_ot')
-        DISCORD_CHANNEL = credentials('discord_channel_ot')
+        DISCORD_BOT_TOKEN=credentials('discord_token_ot')
+        DISCORD_BOT_CHANNEL=credentials('discord_channel_ot')
         
         EMAIL_USER=credentials('mail_user_ot')
         EMAIL_PASSWORD=credentials('mail_password_ot')
@@ -65,7 +65,10 @@ pipeline {
                     export SPRING_PROFILES_ACTIVE=prod
 
                     export MAIL_USER=${EMAIL_USER}
-                    export MAIL_PASSWORD=${EMAIL_PASSWORD}
+                    export EMAIL_PASSWORD=${EMAIL_PASSWORD}
+
+                    export DISCORD_TOKEN=${DISCORD_BOT_TOKEN}
+                    export DISCORD_CHANNEL=${DISCORD_BOT_CHANNEL}
 
                     chmod 744 ./mvnw
                     ./mvnw clean package
