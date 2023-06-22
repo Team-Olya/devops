@@ -1,5 +1,4 @@
 pipeline {
-    agent { label 'frontend' }
     environment {
         STORAGE_BUCKET = 'talantino_team_bucket'
         API_URL = credentials('talantino_url_back')
