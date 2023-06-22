@@ -1,0 +1,75 @@
+pipeline {
+    agent none
+    environment {
+        REGION = 'Poland Central'
+        BACKEND_BUCKET = 'talantino_team_backend'
+        
+        BACKEND_ACCESS_KEY = credentials('talantino_backend_access_key')
+        BACKEND_SECRET_KEY = credentials('talantino_backend_secret_key')
+
+        DATABASE_LOGIN = "talantino"
+        DATABASE_PASSWORD = credentials('talantino_database_password')
+        DATABASE_URL = credentials('talantino_database_url')
+        
+        WEBHOOK_URL = credentials('talantino_discord_webhook')
+        DISCORD_BOT_TOKEN=credentials('talantino_discord_token')
+        DISCORD_BOT_CHANNEL=credentials('talantino_discord_channel')
+
+        EMAIL_USER=credentials('talantino_mail_user')
+        EMAIL_PASSWORD=credentials('talantino_mail_password')
+    }
+    stages {
+        stage('Build') {
+            agent { label 'java' }
+            steps {
+                git branch: 'dev', url: 'https://github.com/Team-Olya/backend.git'
+                sh '''
+                    rm -f .env
+                    export JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64/"
+
+                    export BUCKET="{BACKEND_BUCKET}
+                    export S3_ACCESS_KEY=${BACKEND_ACCESS_KEY}
+                    export S3_SECRET_KEY=${BACKEND_SECRET_KEY}
+                    export S3_REGION=${REGION}
+
+                    export DB_LOGIN=${DATABASE_LOGIN}
+                    export DB_PASSWORD=${DATABASE_PASSWORD}
+                    export DB_URL=${DATABASE_URL}
+
+                    export SPRING_PROFILES_ACTIVE=prod
+
+                    export MAIL_USER=${EMAIL_USER}
+                    export MAIL_PASSWORD=${EMAIL_PASSWORD}
+
+                    chmod 744 ./mvnw
+                    ./mvnw clean package
+                    mv ./target/talantino*.jar ./talantino.jar
+                '''
+                stash name: 'jar', includes: '*.jar'
+            }
+        }
+        stage('Deploy') {
+            agent { label 'backend' }
+            steps {
+                unstash 'jar'
+                sh '''
+                    sudo systemctl stop talantino || true
+                    chmod 755 ./backend/install-systemd-service.sh
+                    ./backend/install-systemd-service.sh
+                    mv -f ./talantino.jar ~/talantino.jar
+                    sudo systemctl enable talantino --now
+                    rm -rf ./*
+                '''
+            }
+        }
+    }
+    post {
+        always {
+            discordSend description: "Status: `${currentBuild.currentResult}`\nBuild log: ${BUILD_URL}consoleText",
+                link: env.BUILD_URL,
+                result: currentBuild.currentResult,
+                title: JOB_NAME,
+                webhookURL: "${env.WEBHOOK_URL}"
+        }
+    }
+}
