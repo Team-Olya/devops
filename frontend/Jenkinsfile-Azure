@@ -7,8 +7,8 @@ pipeline {
         WEBHOOK_URL = credentials('talantino_discord_webhook')
     }
     stages {
-        agent { label 'react' }
         stage('build') {
+            agent { label 'react' }
             steps {
                 git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
 
@@ -24,8 +24,8 @@ pipeline {
                 stash name: 'html', includes: 'html.tar.gz'
             }
         }
-        agent { label 'frontend' }
         stage('deploy') {
+            agent { label 'frontend' }
             steps {
                 unstash name: 'html'
                 sh '''
