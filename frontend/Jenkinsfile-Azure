@@ -1,24 +1,17 @@
 pipeline {
     agent { label 'frontend' }
     environment {
-        REGION = 'Poland Central'
         STORAGE_BUCKET = 'talantino_team_bucket'
-
         API_URL = credentials('talantino_url_back')
-
-        FRONTEND_ACCESS_KEY = credentials('talantino_frontend_access_key')
-        FRONTEND_SECRET_KEY = credentials('talantino_frontend_secret_key')
 
         WEBHOOK_URL = credentials('talantino_discord_webhook')
     }
     stages {
-        stage('clone') {
-            steps {
-                git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
-            }
-        }
+        agent { label 'react' }
         stage('build') {
             steps {
+                git branch: 'dev', url: 'https://github.com/Team-Olya/frontend.git'
+
                 sh '''
                 export REACT_APP_API_URL=${API_URL}
                 export BUCKET=${STORAGE_BUCKET}
@@ -26,14 +19,20 @@ pipeline {
                 npm install --omit=dev
                 npm run build
                 chmod -R 755 ./build/*
+                tar -cvzf ./html.tar.gz -C ./build .
                 '''
+                stash name: 'html', includes: 'html.tar.gz'
             }
         }
+        agent { label 'frontend' }
         stage('deploy') {
             steps {
+                unstash name: 'html'
                 sh '''
-                    ssh -i "/home/jenkins/.ssh/slave-Talantino" talantino-app@10.0.0.5 "rm -rf /var/www/talantino-application/html/*"
-                    scp -i "/home/jenkins/.ssh/slave-Talantino" -rp ./build/* talantino-app@10.0.0.5:/var/www/talantino-application/html/
+                    rm -rf /var/www/talantino-application/html/*
+                    mv ./html.tar.gz /var/www/talantino-application/html/
+                    tar -xzvf /var/www/talantino-application/html/html.tar.gz -C /var/www/talantino-application/html/ --strip-components=1
+                    rm -rf ./*
                 '''
             }
         }
