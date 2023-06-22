@@ -24,7 +24,7 @@ pipeline {
                 git branch: 'dev', url: 'https://github.com/Team-Olya/backend.git'
                 sh '''
                     rm -f .env
-                    export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64/"
+                    export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
 
                     export BUCKET=${BACKEND_BUCKET}
                     export S3_ACCESS_KEY=${BACKEND_BUCKET_ACCESS_KEY}
